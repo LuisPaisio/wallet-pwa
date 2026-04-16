@@ -1,46 +1,75 @@
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
+/* Reset básico */
+* {
+  box-sizing: border-box;
   margin: 0;
-  background-color: #f5f5f5;
-  color: #333;
+  padding: 0;
 }
 
-h1, h2 {
+/* Estilo general */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #f5f5f5, #e8f5e9);
+  color: #333;
+  min-height: 100vh;
+}
+
+/* Títulos */
+h1 {
   text-align: center;
   margin: 20px 0;
+  font-size: 2rem;
+  color: #2e7d32;
+}
+
+h2 {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 1.5rem;
+  color: #388e3c;
 }
 
 /* Barra de tabs principal */
 .main-tabs {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   background: #4CAF50;
-  padding: 10px;
+  border-bottom: 3px solid #388E3C;
 }
 
 .main-tabs a {
   flex: 1;
   text-align: center;
-  color: white;
+  padding: 14px 0;
   text-decoration: none;
+  color: white;
   font-weight: bold;
-  padding: 10px;
-  transition: background 0.3s;
-  border-radius: 6px;
+  border-bottom: 4px solid transparent;
+  transition: background 0.3s, border-bottom 0.3s;
+}
+
+.main-tabs a:hover {
+  background: #45a049;
 }
 
 .main-tabs a.active {
-  background: #388E3C;
+  background: #2e7d32;
+  border-bottom: 4px solid #FFC107; /* línea dorada para destacar */
 }
 
 /* Secciones de tabs */
 .tab-section {
   display: none;
   padding: 20px;
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 .tab-section.active {
   display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Contenedor de gráficos */
@@ -49,28 +78,34 @@ h1, h2 {
   max-width: 600px;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding: 15px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  padding: 20px;
+  transition: transform 0.2s;
+}
+
+.chart-container:hover {
+  transform: translateY(-3px);
 }
 
 /* Botón flotante */
 .fab {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 25px;
+  right: 25px;
   background: #4CAF50;
   color: white;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 32px;
+  width: 65px;
+  height: 65px;
+  font-size: 36px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  transition: background 0.3s;
+  box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+  transition: background 0.3s, transform 0.2s;
 }
 .fab:hover {
   background: #45a049;
+  transform: rotate(90deg);
 }
 
 /* Modal */
@@ -79,27 +114,33 @@ h1, h2 {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.6);
   z-index: 1000;
 }
 
 .modal-content {
   position: relative;
-  background: white;
-  margin: 10% auto;
-  padding: 20px;
+  background: #fff;
+  margin: 8% auto;
+  padding: 25px;
   width: 90%;
-  max-width: 400px;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  max-width: 420px;
+  border-radius: 14px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 /* Botón de cierre */
 .close {
   position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 24px;
+  top: 12px;
+  right: 18px;
+  font-size: 26px;
   font-weight: bold;
   color: #333;
   cursor: pointer;
@@ -112,7 +153,7 @@ h1, h2 {
 .tabs {
   display: flex;
   justify-content: space-around;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   padding: 0;
   list-style: none;
 }
@@ -127,13 +168,13 @@ h1, h2 {
   padding: 10px;
   text-decoration: none;
   color: #555;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   transition: all 0.3s;
 }
 
 .tabs a.active {
   color: #4CAF50;
-  border-bottom: 2px solid #4CAF50;
+  border-bottom: 3px solid #4CAF50;
   font-weight: bold;
 }
 
@@ -149,23 +190,32 @@ h1, h2 {
 /* Inputs y botones dentro del modal */
 .modal-content input {
   width: 100%;
-  padding: 8px;
-  margin: 6px 0;
+  padding: 10px;
+  margin: 8px 0;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: 8px;
+  transition: border 0.3s;
+}
+
+.modal-content input:focus {
+  border: 1px solid #4CAF50;
+  outline: none;
 }
 
 .modal-content button {
   width: 100%;
-  padding: 10px;
-  margin-top: 10px;
+  padding: 12px;
+  margin-top: 12px;
   background: #4CAF50;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s, transform 0.2s;
 }
 
 .modal-content button:hover {
   background: #45a049;
+  transform: scale(1.03);
 }
