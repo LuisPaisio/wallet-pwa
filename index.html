@@ -9,48 +9,46 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1>Simple Wallet</h1>
-
-  <!-- Tabs principales -->
-  <div class="main-tabs">
-    <a href="#wallet" class="active">Wallet</a>
-    <a href="#metas">Metas</a>
-  </div>
+  <!-- Barra superior con branding -->
+  <header class="main-header">
+    <div class="brand">💸 Wallet Neon</div>
+    <nav class="main-tabs">
+      <a href="#wallet" class="active">Wallet</a>
+      <a href="#metas">Metas</a>
+    </nav>
+  </header>
 
   <!-- Sección Wallet -->
   <div id="wallet" class="tab-section active">
     <div class="chart-container">
       <canvas id="graficoIngresosGastos"></canvas>
+      <div class="chart-overlay">No hay datos aún</div>
     </div>
     <div class="chart-container">
       <canvas id="graficoCategorias"></canvas>
+      <div class="chart-overlay">No hay datos aún</div>
     </div>
   </div>
 
   <!-- Sección Metas -->
   <div id="metas" class="tab-section">
     <h2>Metas de ahorro</h2>
-    <div>
-      <input id="descMeta" type="text" placeholder="Descripción de la meta">
-      <input id="montoMeta" type="number" placeholder="Monto objetivo">
-      <button onclick="guardarMeta()">Crear meta</button>
-    </div>
-
-    <div>
-      <input id="idMeta" type="number" placeholder="ID de la meta">
-      <input id="montoAhorro" type="number" placeholder="Monto a ahorrar">
-      <button onclick="sumarAhorro()">Sumar ahorro</button>
-    </div>
-
-    <div class="chart-container">
-      <canvas id="graficoAhorro"></canvas>
+    <div id="listaMetas" class="metas-list">
+      <!-- Aquí se renderizan las metas como tarjetas -->
+      <!-- Ejemplo:
+      <div class="meta-card">
+        <h3>Viaje a Japón</h3>
+        <canvas class="graficoMeta"></canvas>
+        <button class="btn-sumar">Sumar ahorro</button>
+      </div>
+      -->
     </div>
   </div>
 
-  <!-- Botón Flotante -->
+  <!-- Botón Flotante (ahora crea metas en la sección Metas) -->
   <button id="fab" class="fab">+</button>
 
-  <!-- Modal -->
+  <!-- Modal para ingresos/gastos -->
   <div id="modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
@@ -72,6 +70,27 @@
         <input id="etiquetaGasto" type="text" placeholder="Etiqueta">
         <button onclick="guardarMovimiento('gasto')">Guardar</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal para crear metas -->
+  <div id="modalMeta" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Nueva meta</h3>
+      <input id="descMeta" type="text" placeholder="Descripción de la meta">
+      <input id="montoMeta" type="number" placeholder="Monto objetivo">
+      <button onclick="guardarMeta()">Crear meta</button>
+    </div>
+  </div>
+
+  <!-- Modal para sumar ahorro -->
+  <div id="modalAhorro" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Sumar ahorro</h3>
+      <input id="montoAhorro" type="number" placeholder="Monto a ahorrar">
+      <button onclick="sumarAhorroSeleccionada()">Guardar</button>
     </div>
   </div>
 

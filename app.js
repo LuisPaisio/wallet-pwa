@@ -8,8 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
     db.createObjectStore("metas", { keyPath: "id", autoIncrement: true });
   };
 
-  // Variables globales para gráficos (evitar duplicados)
-  let chartIngresosGastos, chartCategorias, chartAhorro;
+  // Variables globales
+  let chartIngresosGastos, chartCategorias;
+  let metasSeleccionada = null;
 
   // Guardar ingreso/gasto
   function guardarMovimiento(tipo) {
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tx.oncomplete = () => {
       actualizarGraficos();
-      cerrarModal();
+      cerrarModal("modal");
     };
   }
 
@@ -46,28 +47,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Actualizar gráficos
+  // Actualizar gráficos Wallet
   function actualizarGraficos() {
     obtenerMovimientos(movimientos => {
       let totalIngresos = movimientos.filter(m => m.tipo === 'ingreso').reduce((acc, m) => acc + m.monto, 0);
       let totalGastos = movimientos.filter(m => m.tipo === 'gasto').reduce((acc, m) => acc + m.monto, 0);
 
-      // Evitar gráficos vacíos
-      if (totalIngresos === 0 && totalGastos === 0) {
-        totalIngresos = 0.01;
-        totalGastos = 0.01;
-      }
-
-      let categorias = {};
-      movimientos.filter(m => m.tipo === 'gasto').forEach(m => {
-        categorias[m.etiqueta] = (categorias[m.etiqueta] || 0) + m.monto;
-      });
-
-      if (Object.keys(categorias).length === 0) {
-        categorias = { "Sin datos": 0.01 };
-      }
-
-      // Gráfico ingresos vs gastos
       if (chartIngresosGastos) chartIngresosGastos.destroy();
       chartIngresosGastos = new Chart(document.getElementById('graficoIngresosGastos'), {
         type: 'bar',
@@ -76,12 +61,16 @@ document.addEventListener("DOMContentLoaded", () => {
           datasets: [{
             label: 'Totales',
             data: [totalIngresos, totalGastos],
-            backgroundColor: ['#4CAF50', '#F44336']
+            backgroundColor: ['#3b82f6', '#f87171']
           }]
         }
       });
 
-      // Gráfico circular por categorías
+      let categorias = {};
+      movimientos.filter(m => m.tipo === 'gasto').forEach(m => {
+        categorias[m.etiqueta] = (categorias[m.etiqueta] || 0) + m.monto;
+      });
+
       if (chartCategorias) chartCategorias.destroy();
       chartCategorias = new Chart(document.getElementById('graficoCategorias'), {
         type: 'doughnut',
@@ -89,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
           labels: Object.keys(categorias),
           datasets: [{
             data: Object.values(categorias),
-            backgroundColor: ['#FF9800', '#2196F3', '#9C27B0', '#00BCD4']
+            backgroundColor: ['#facc15', '#06b6d4', '#9c27b0', '#60a5fa']
           }]
         }
       });
@@ -97,46 +86,39 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Abrir/cerrar modal
-  document.getElementById('fab').onclick = () => {
-    document.getElementById('modal').style.display = 'block';
-  };
-  function cerrarModal() {
-    document.getElementById('modal').style.display = 'none';
+  function abrirModal(id) {
+    document.getElementById(id).style.display = 'block';
   }
-  document.querySelector(".close").onclick = cerrarModal;
+  function cerrarModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
 
-  // Tabs dentro del modal
+  document.getElementById('fab').onclick = () => abrirModal("modalMeta");
+  document.querySelectorAll(".close").forEach(btn => {
+    btn.onclick = () => btn.closest(".modal").style.display = "none";
+  });
+
+  // Tabs dentro del modal ingresos/gastos
   document.querySelectorAll('.tabs a').forEach(tab => {
     tab.addEventListener('click', e => {
       e.preventDefault();
       document.querySelectorAll('.tabs a').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      const target = document.querySelector(tab.getAttribute('href'));
-      target.classList.add('active');
+      document.querySelector(tab.getAttribute('href')).classList.add('active');
     });
   });
 
-  // Tabs principales (Wallet / Metas)
+  // Tabs principales
   document.querySelectorAll('.main-tabs a').forEach(tab => {
     tab.addEventListener('click', e => {
       e.preventDefault();
       document.querySelectorAll('.main-tabs a').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-
       document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
-      const target = document.querySelector(tab.getAttribute('href'));
-      target.classList.add('active');
+      document.querySelector(tab.getAttribute('href')).classList.add('active');
     });
   });
-
-  // Registrar Service Worker
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js")
-      .then(() => console.log("Service Worker registrado"))
-      .catch(err => console.error("Error al registrar SW:", err));
-  }
 
   // Guardar meta
   function guardarMeta() {
@@ -149,19 +131,85 @@ document.addEventListener("DOMContentLoaded", () => {
     store.add({ desc, meta: monto, ahorrado: 0 });
 
     tx.oncomplete = () => {
-      actualizarGraficoAhorro();
+      cerrarModal("modalMeta");
+      renderizarMetas();
     };
   }
 
-  // Sumar ahorro
-  function sumarAhorro() {
-    let id = parseInt(document.getElementById('idMeta').value);
-    let monto = parseFloat(document.getElementById('montoAhorro').value);
+  // Renderizar metas como tarjetas
+  function renderizarMetas() {
+    let db = request.result;
+    let tx = db.transaction("metas", "readonly");
+    let store = tx.objectStore("metas");
+    let metas = [];
+    store.openCursor().onsuccess = function(event) {
+      let cursor = event.target.result;
+      if (cursor) {
+        metas.push(cursor.value);
+        cursor.continue();
+      } else {
+        const lista = document.getElementById("listaMetas");
+        lista.innerHTML = "";
+        metas.forEach(meta => {
+          const card = document.createElement("div");
+          card.className = "meta-card";
+          card.innerHTML = `
+            <h3>${meta.desc}</h3>
+            <canvas id="meta-${meta.id}" width="200" height="200"></canvas>
+            <button class="btn-sumar" data-id="${meta.id}">Sumar ahorro</button>
+          `;
+          lista.appendChild(card);
 
+          // Renderizar gráfico con monto en el centro
+          let progreso = (meta.ahorrado / meta.meta) * 100;
+          new Chart(document.getElementById(`meta-${meta.id}`), {
+            type: 'doughnut',
+            data: {
+              datasets: [{
+                data: [progreso, 100 - progreso],
+                backgroundColor: ['#3b82f6', '#334155']
+              }]
+            },
+            options: {
+              cutout: '80%',
+              plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false },
+              }
+            },
+            plugins: [{
+              id: 'centerText',
+              beforeDraw: chart => {
+                let { ctx, chartArea: { width, height } } = chart;
+                ctx.save();
+                ctx.font = "bold 20px Poppins";
+                ctx.fillStyle = "#06b6d4";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(`$${meta.ahorrado}`, width / 2, height / 2);
+              }
+            }]
+          });
+        });
+
+        // Asignar eventos a botones "Sumar ahorro"
+        document.querySelectorAll(".btn-sumar").forEach(btn => {
+          btn.onclick = () => {
+            metasSeleccionada = parseInt(btn.dataset.id);
+            abrirModal("modalAhorro");
+          };
+        });
+      }
+    };
+  }
+
+  // Sumar ahorro a la meta seleccionada
+  function sumarAhorroSeleccionada() {
+    let monto = parseFloat(document.getElementById('montoAhorro').value);
     let db = request.result;
     let tx = db.transaction("metas", "readwrite");
     let store = tx.objectStore("metas");
-    let req = store.get(id);
+    let req = store.get(metasSeleccionada);
 
     req.onsuccess = () => {
       let meta = req.result;
@@ -169,47 +217,26 @@ document.addEventListener("DOMContentLoaded", () => {
         meta.ahorrado += monto;
         store.put(meta);
         tx.oncomplete = () => {
-          actualizarGraficoAhorro();
+          cerrarModal("modalAhorro");
+          renderizarMetas();
         };
-      } else {
-        console.error("Meta no encontrada con ID:", id);
       }
     };
   }
 
-  // Actualizar gráfico de ahorro
-  function actualizarGraficoAhorro() {
-    let db = request.result;
-    let tx = db.transaction("metas", "readonly");
-    let store = tx.objectStore("metas");
-    let metas = [];
-
-    store.openCursor().onsuccess = function(event) {
-      let cursor = event.target.result;
-      if (cursor) {
-        metas.push(cursor.value);
-        cursor.continue();
-      } else {
-        if (metas.length > 0) {
-          let meta = metas[0]; // por ahora mostramos la primera
-          let progreso = (meta.ahorrado / meta.meta) * 100;
-
-          if (chartAhorro) chartAhorro.destroy();
-          chartAhorro = new Chart(document.getElementById('graficoAhorro'), {
-            type: 'doughnut',
-            data: {
-              datasets: [{
-                data: [progreso, 100 - progreso],
-                backgroundColor: ['#4CAF50', '#e0e0e0']
-              }]
-            },
-            options: {
-              cutout: '80%',
-              plugins: { legend: { display: false } }
-            }
-          });
-        }
-      }
-    };
+  // Registrar Service Worker
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("Service Worker registrado"))
+      .catch(err => console.error("Error al registrar SW:", err));
   }
+
+  // Exponer funciones globales
+  window.guardarMovimiento = guardarMovimiento;
+  window.guardarMeta = guardarMeta;
+  window.sumarAhorroSeleccionada = sumarAhorroSeleccionada;
+
+  // Render inicial
+  renderizarMetas();
+  actualizarGraficos();
 });
