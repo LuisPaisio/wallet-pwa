@@ -11,9 +11,41 @@
 <body>
   <h1>Simple Wallet</h1>
 
-  <!-- Gráficos -->
-  <canvas id="graficoIngresosGastos"></canvas>
-  <canvas id="graficoCategorias"></canvas>
+  <!-- Tabs principales -->
+  <div class="main-tabs">
+    <a href="#wallet" class="active">Wallet</a>
+    <a href="#metas">Metas</a>
+  </div>
+
+  <!-- Sección Wallet -->
+  <div id="wallet" class="tab-section active">
+    <div class="chart-container">
+      <canvas id="graficoIngresosGastos"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="graficoCategorias"></canvas>
+    </div>
+  </div>
+
+  <!-- Sección Metas -->
+  <div id="metas" class="tab-section">
+    <h2>Metas de ahorro</h2>
+    <div>
+      <input id="descMeta" type="text" placeholder="Descripción de la meta">
+      <input id="montoMeta" type="number" placeholder="Monto objetivo">
+      <button onclick="guardarMeta()">Crear meta</button>
+    </div>
+
+    <div>
+      <input id="idMeta" type="number" placeholder="ID de la meta">
+      <input id="montoAhorro" type="number" placeholder="Monto a ahorrar">
+      <button onclick="sumarAhorro()">Sumar ahorro</button>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="graficoAhorro"></canvas>
+    </div>
+  </div>
 
   <!-- Botón Flotante -->
   <button id="fab" class="fab">+</button>
@@ -21,12 +53,13 @@
   <!-- Modal -->
   <div id="modal" class="modal">
     <div class="modal-content">
+      <span class="close">&times;</span>
       <ul class="tabs">
-        <li><a href="#ingreso">Ingreso</a></li>
+        <li><a href="#ingreso" class="active">Ingreso</a></li>
         <li><a href="#gasto">Gasto</a></li>
       </ul>
 
-      <div id="ingreso" class="tab-content">
+      <div id="ingreso" class="tab-content active">
         <input id="descIngreso" type="text" placeholder="Descripción">
         <input id="montoIngreso" type="number" placeholder="Monto">
         <input id="etiquetaIngreso" type="text" placeholder="Etiqueta">
@@ -41,22 +74,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Sección de ahorro -->
-  <h2>Metas de ahorro</h2>
-  <div>
-    <input id="descMeta" type="text" placeholder="Descripción de la meta">
-    <input id="montoMeta" type="number" placeholder="Monto objetivo">
-    <button onclick="guardarMeta()">Crear meta</button>
-  </div>
-
-  <div>
-    <input id="idMeta" type="number" placeholder="ID de la meta">
-    <input id="montoAhorro" type="number" placeholder="Monto a ahorrar">
-    <button onclick="sumarAhorro()">Sumar ahorro</button>
-  </div>
-
-  <canvas id="graficoAhorro"></canvas>
 
   <script src="app.js"></script>
 </body>

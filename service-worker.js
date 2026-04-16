@@ -1,16 +1,15 @@
-const CACHE_NAME = "wallet-cache-v2";
+const CACHE_NAME = "wallet-cache-v4";
 const urlsToCache = [
-  "/",
+  "/", 
   "/index.html",
   "/style.css",
   "/app.js",
   "/manifest.json",
   "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "https://cdn.jsdelivr.net/npm/chart.js" // cachear librería externa
+  "/icons/icon-512.png"
 ];
 
-// Instalar service worker y cachear archivos
+// Instalar service worker y cachear archivos locales
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -34,16 +33,21 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(response => {
-      // Si está en cache, lo devuelve; si no, lo busca en la red y lo guarda
-      return (
-        response ||
-        fetch(event.request).then(res => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, res.clone());
-            return res;
-          });
-        })
-      );
+      if (response) {
+        return response; // devolver desde cache
+      }
+      return fetch(event.request).then(res => {
+        // cachear dinámicamente recursos externos (ej. Chart.js)
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, res.clone());
+          return res;
+        });
+      }).catch(() => {
+        // Fallback: si no hay conexión y no está en cache
+        if (event.request.destination === "document") {
+          return caches.match("/index.html");
+        }
+      });
     })
   );
 });

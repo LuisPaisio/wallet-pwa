@@ -51,10 +51,20 @@ function actualizarGraficos() {
     let totalIngresos = movimientos.filter(m => m.tipo === 'ingreso').reduce((acc, m) => acc + m.monto, 0);
     let totalGastos = movimientos.filter(m => m.tipo === 'gasto').reduce((acc, m) => acc + m.monto, 0);
 
+    // Evitar gráficos vacíos
+    if (totalIngresos === 0 && totalGastos === 0) {
+      totalIngresos = 0.01;
+      totalGastos = 0.01;
+    }
+
     let categorias = {};
     movimientos.filter(m => m.tipo === 'gasto').forEach(m => {
       categorias[m.etiqueta] = (categorias[m.etiqueta] || 0) + m.monto;
     });
+
+    if (Object.keys(categorias).length === 0) {
+      categorias = { "Sin datos": 0.01 };
+    }
 
     // Gráfico ingresos vs gastos
     if (chartIngresosGastos) chartIngresosGastos.destroy();
@@ -92,12 +102,29 @@ document.getElementById('fab').onclick = () => {
 function cerrarModal() {
   document.getElementById('modal').style.display = 'none';
 }
+document.querySelector(".close").onclick = cerrarModal;
 
 // Tabs dentro del modal
 document.querySelectorAll('.tabs a').forEach(tab => {
   tab.addEventListener('click', e => {
     e.preventDefault();
+    document.querySelectorAll('.tabs a').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    const target = document.querySelector(tab.getAttribute('href'));
+    target.classList.add('active');
+  });
+});
+
+// Tabs principales (Wallet / Metas)
+document.querySelectorAll('.main-tabs a').forEach(tab => {
+  tab.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.main-tabs a').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
     const target = document.querySelector(tab.getAttribute('href'));
     target.classList.add('active');
   });
