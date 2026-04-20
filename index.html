@@ -20,32 +20,34 @@
 
   <!-- Sección Wallet -->
   <div id="wallet" class="tab-section active">
-  <div id="tablaMovimientos" class="chart-container">
-    <h2>Últimos movimientos</h2>
-    <p id="mensajeMovimientos" class="chart-overlay">No hay datos aún</p>
-    <table class="movimientos-table">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Tipo</th>
-          <th>Descripción</th>
-          <th>Monto</th>
-          <th>Categoría</th>
-        </tr>
-      </thead>
-      <tbody id="movimientosBody">
-        <!-- filas dinámicas -->
-      </tbody>
-    </table>
-    <button id="verMas" class="btn-vermas">Ver más</button>
-  </div>
+    <div id="tablaMovimientos" class="chart-container">
+      <h2>Últimos movimientos</h2>
+      <p id="mensajeMovimientos" class="chart-overlay">No hay datos aún</p>
+      <table class="movimientos-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Monto</th>
+            <th>Categoría</th>
+          </tr>
+        </thead>
+        <tbody id="movimientosBody">
+          <!-- filas dinámicas -->
+        </tbody>
+      </table>
+      <button id="verMas" class="btn-vermas">Ver más</button>
+    </div>
+
     <div class="chart-container">
       <canvas id="graficoIngresosGastos"></canvas>
-      <div id="mensajeIngresosGastos" class="chart-overlay">No hay datos aún
+      <div id="mensajeIngresosGastos" class="chart-overlay">No hay datos aún</div>
     </div>
+
     <div class="chart-container">
       <canvas id="graficoCategorias"></canvas>
-      <div id="mensajeCategorias" class="chart-overlay">No hay datos aún
+      <div id="mensajeCategorias" class="chart-overlay">No hay datos aún</div>
     </div>
   </div>
 
@@ -54,17 +56,10 @@
     <h2>Metas de ahorro</h2>
     <div id="listaMetas" class="metas-list">
       <!-- Aquí se renderizan las metas como tarjetas -->
-      <!-- Ejemplo:
-      <div class="meta-card">
-        <h3>Viaje a Japón</h3>
-        <canvas class="graficoMeta"></canvas>
-        <button class="btn-sumar">Sumar ahorro</button>
-      </div>
-      -->
     </div>
   </div>
 
-  <!-- Botón Flotante (ahora crea metas en la sección Metas) -->
+  <!-- Botón Flotante -->
   <button id="fab" class="fab">+</button>
 
   <!-- Modal para ingresos/gastos -->

@@ -166,9 +166,9 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
     }
 
     let totalIngresos = movimientos.filter(m => m.tipo === 'ingreso')
-                                   .reduce((acc, m) => acc + m.monto, 0);
+                                  .reduce((acc, m) => acc + m.monto, 0);
     let totalGastos = movimientos.filter(m => m.tipo === 'gasto')
-                                 .reduce((acc, m) => acc + m.monto, 0);
+                                .reduce((acc, m) => acc + m.monto, 0);
 
     if (chartIngresosGastos) chartIngresosGastos.destroy();
     chartIngresosGastos = new Chart(document.getElementById('graficoIngresosGastos'), {
@@ -180,6 +180,17 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
           data: [totalIngresos, totalGastos],
           backgroundColor: ['#3b82f6', '#f87171']
         }]
+      },
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Ingresos vs Gastos',
+            font: { size: 18, family: 'Poppins', weight: 'bold' },
+            color: '#06b6d4'
+          },
+          legend: { display: false }
+        }
       }
     });
 
@@ -189,6 +200,8 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
     });
 
     if (chartCategorias) chartCategorias.destroy();
+    let totalGastosCategorias = Object.values(categorias).reduce((acc, val) => acc + val, 0);
+
     chartCategorias = new Chart(document.getElementById('graficoCategorias'), {
       type: 'doughnut',
       data: {
@@ -197,7 +210,30 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
           data: Object.values(categorias),
           backgroundColor: ['#facc15', '#06b6d4', '#9c27b0', '#60a5fa']
         }]
-      }
+      },
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Gastos por Categoría',
+            font: { size: 18, family: 'Poppins', weight: 'bold' },
+            color: '#06b6d4'
+          },
+          legend: { position: 'bottom' }
+        }
+      },
+      plugins: [{
+        id: 'centerText',
+        beforeDraw: chart => {
+          let { ctx, chartArea: { width, height } } = chart;
+          ctx.save();
+          ctx.font = `bold 18px ${getComputedStyle(document.body).fontFamily}`;
+          ctx.fillStyle = "#06b6d4";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`$${totalGastosCategorias}`, width / 2, height / 2);
+        }
+      }]
     });
   }
 
