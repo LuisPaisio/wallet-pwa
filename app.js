@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Inicializar IndexedDB
   let request = indexedDB.open("walletDB", 1);
 
   request.onupgradeneeded = function(event) {
@@ -8,11 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
     db.createObjectStore("metas", { keyPath: "id", autoIncrement: true });
   };
 
-  // Variables globales
   let chartIngresosGastos, chartCategorias;
   let metasSeleccionada = null;
 
-  // Guardar ingreso/gasto
+  // --- Funciones de gráficos Wallet ---
   function guardarMovimiento(tipo) {
     let desc = tipo === 'ingreso' ? document.getElementById('descIngreso').value : document.getElementById('descGasto').value;
     let monto = tipo === 'ingreso' ? document.getElementById('montoIngreso').value : document.getElementById('montoGasto').value;
@@ -29,15 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Leer movimientos
   function obtenerMovimientos(callback) {
     let db = request.result;
     let tx = db.transaction("movimientos", "readonly");
     let store = tx.objectStore("movimientos");
     let movimientos = [];
-
-    store.openCursor().onsuccess = function(event) {
-      let cursor = event.target.result;
+    store.openCursor().onsuccess = e => {
+      let cursor = e.target.result;
       if (cursor) {
         movimientos.push(cursor.value);
         cursor.continue();
@@ -47,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Actualizar gráficos Wallet
   function actualizarGraficos() {
     obtenerMovimientos(movimientos => {
       let totalIngresos = movimientos.filter(m => m.tipo === 'ingreso').reduce((acc, m) => acc + m.monto, 0);
@@ -85,42 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Abrir/cerrar modal
-  function abrirModal(id) {
-    document.getElementById(id).style.display = 'block';
-  }
-  function cerrarModal(id) {
-    document.getElementById(id).style.display = 'none';
-  }
-
-  document.getElementById('fab').onclick = () => abrirModal("modalMeta");
-  document.querySelectorAll(".close").forEach(btn => {
-    btn.onclick = () => btn.closest(".modal").style.display = "none";
-  });
-
-  // Tabs dentro del modal ingresos/gastos
-  document.querySelectorAll('.tabs a').forEach(tab => {
-    tab.addEventListener('click', e => {
-      e.preventDefault();
-      document.querySelectorAll('.tabs a').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelector(tab.getAttribute('href')).classList.add('active');
-    });
-  });
-
-  // Tabs principales
-  document.querySelectorAll('.main-tabs a').forEach(tab => {
-    tab.addEventListener('click', e => {
-      e.preventDefault();
-      document.querySelectorAll('.main-tabs a').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
-      document.querySelector(tab.getAttribute('href')).classList.add('active');
-    });
-  });
-
-  // Guardar meta
+  // --- Funciones de metas ---
   function guardarMeta() {
     let desc = document.getElementById('descMeta').value;
     let monto = parseFloat(document.getElementById('montoMeta').value);
@@ -136,14 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Renderizar metas como tarjetas
   function renderizarMetas() {
     let db = request.result;
     let tx = db.transaction("metas", "readonly");
     let store = tx.objectStore("metas");
     let metas = [];
-    store.openCursor().onsuccess = function(event) {
-      let cursor = event.target.result;
+    store.openCursor().onsuccess = e => {
+      let cursor = e.target.result;
       if (cursor) {
         metas.push(cursor.value);
         cursor.continue();
@@ -160,8 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
           lista.appendChild(card);
 
-          // Renderizar gráfico con monto en el centro
           let progreso = (meta.ahorrado / meta.meta) * 100;
+          if (progreso < 0) progreso = 0;
+          if (progreso > 100) progreso = 100;
+
           new Chart(document.getElementById(`meta-${meta.id}`), {
             type: 'doughnut',
             data: {
@@ -172,27 +133,23 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             options: {
               cutout: '80%',
-              plugins: {
-                legend: { display: false },
-                tooltip: { enabled: false },
-              }
+              plugins: { legend: { display: false }, tooltip: { enabled: false } }
             },
             plugins: [{
               id: 'centerText',
               beforeDraw: chart => {
                 let { ctx, chartArea: { width, height } } = chart;
                 ctx.save();
-                ctx.font = "bold 20px Poppins";
+                ctx.font = "bold 18px Poppins";
                 ctx.fillStyle = "#06b6d4";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillText(`$${meta.ahorrado}`, width / 2, height / 2);
+                ctx.fillText(`$${meta.ahorrado}/${meta.meta}`, width / 2, height / 2);
               }
             }]
           });
         });
 
-        // Asignar eventos a botones "Sumar ahorro"
         document.querySelectorAll(".btn-sumar").forEach(btn => {
           btn.onclick = () => {
             metasSeleccionada = parseInt(btn.dataset.id);
@@ -203,7 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Sumar ahorro a la meta seleccionada
   function sumarAhorroSeleccionada() {
     let monto = parseFloat(document.getElementById('montoAhorro').value);
     let db = request.result;
@@ -214,7 +170,12 @@ document.addEventListener("DOMContentLoaded", () => {
     req.onsuccess = () => {
       let meta = req.result;
       if (meta) {
+        if (meta.ahorrado >= meta.meta) {
+          alert("Meta completada, no puedes sumar más ahorro.");
+          return;
+        }
         meta.ahorrado += monto;
+        if (meta.ahorrado > meta.meta) meta.ahorrado = meta.meta;
         store.put(meta);
         tx.oncomplete = () => {
           cerrarModal("modalAhorro");
@@ -224,7 +185,45 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Registrar Service Worker
+  // --- Modal helpers ---
+  function abrirModal(id) { document.getElementById(id).style.display = 'block'; }
+  function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+  document.querySelectorAll(".close").forEach(btn => {
+    btn.onclick = () => btn.closest(".modal").style.display = "none";
+  });
+
+  // --- FAB dinámico según tab activo ---
+  document.getElementById('fab').onclick = () => {
+    if (document.querySelector('.main-tabs a.active').getAttribute('href') === '#wallet') {
+      abrirModal("modal");       // Modal de ingresos/gastos
+    } else {
+      abrirModal("modalMeta");   // Modal de metas
+    }
+  };
+
+  // --- Tabs dentro del modal ingresos/gastos ---
+  document.querySelectorAll('.tabs a').forEach(tab => {
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('.tabs a').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(tab.getAttribute('href')).classList.add('active');
+    });
+  });
+
+  // --- Tabs principales ---
+  document.querySelectorAll('.main-tabs a').forEach(tab => {
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('.main-tabs a').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+      document.querySelector(tab.getAttribute('href')).classList.add('active');
+    });
+  });
+
+  // --- Service Worker ---
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("service-worker.js")
       .then(() => console.log("Service Worker registrado"))
