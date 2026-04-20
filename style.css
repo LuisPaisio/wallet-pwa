@@ -323,7 +323,14 @@ body {
   display: block;
 }
 
+/* Wrapper con scroll solo en mobile */
 .movimientos-wrapper {
-  overflow-x: auto;                 /* habilita scroll horizontal */
-  -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
+  overflow-x: hidden; /* por defecto en desktop */
+}
+
+@media (max-width: 768px) {
+  .movimientos-wrapper {
+    overflow-x: auto;                 /* habilita scroll horizontal solo en mobile */
+    -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
+  }
 }
