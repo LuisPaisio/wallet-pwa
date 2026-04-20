@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let request = indexedDB.open("walletDB", 1);
 
   request.onupgradeneeded = function(event) {
-    let db = event.target.result;
+    db = event.target.result; // usar la global, no crear una nueva con let
     db.createObjectStore("movimientos", { keyPath: "id", autoIncrement: true });
     db.createObjectStore("metas", { keyPath: "id", autoIncrement: true });
   };
@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   request.onsuccess = function(event) {
     db = event.target.result;
 
+    // Render inicial SOLO cuando la base está lista
     renderizarMovimientos();
     renderizarMetas();
     actualizarGraficos();
@@ -34,8 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
     store.add({ tipo, desc, monto: parseFloat(monto), etiqueta, fecha: new Date() });
 
     tx.oncomplete = () => {
-      actualizarGraficos();
       renderizarMovimientos();
+      renderizarMetas();
+      actualizarGraficos();
       cerrarModal("modal");
     };
   }
@@ -183,8 +185,10 @@ document.addEventListener("DOMContentLoaded", () => {
     store.add({ desc, meta: monto, ahorrado: 0 });
 
     tx.oncomplete = () => {
-      cerrarModal("modalMeta");
+      renderizarMovimientos();
       renderizarMetas();
+      actualizarGraficos();
+      cerrarModal("modalMeta");
     };
   }
 
@@ -282,9 +286,10 @@ document.addEventListener("DOMContentLoaded", () => {
         store.put(meta);
 
         tx.oncomplete = () => {
-          cerrarModal("modalAhorro");
+          renderizarMovimientos();
           renderizarMetas();
           actualizarGraficos();
+          cerrarModal("modalAhorro");
         };
       }
     };
