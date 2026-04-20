@@ -158,9 +158,11 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
   // --- Renderizar gráficos ---
   function actualizarGraficos(movimientos) {
     if (movimientos.length === 0) {
-      document.getElementById('mensajeWallet').style.display = 'block';
+      document.getElementById('mensajeIngresosGastos').style.display = 'block';
+      document.getElementById('mensajeCategorias').style.display = 'block';
     } else {
-      document.getElementById('mensajeWallet').style.display = 'none';
+      document.getElementById('mensajeIngresosGastos').style.display = 'none';
+      document.getElementById('mensajeCategorias').style.display = 'none';
     }
 
     let totalIngresos = movimientos.filter(m => m.tipo === 'ingreso')
@@ -229,10 +231,23 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
         options: {
           cutout: '80%',
           plugins: { legend: { display: false }, tooltip: { enabled: false } }
-        }
+        },
+        plugins: [{
+          id: 'centerText',
+          beforeDraw: chart => {
+            let { ctx, chartArea: { width, height } } = chart;
+            ctx.save();
+            ctx.font = `bold 16px ${getComputedStyle(document.body).fontFamily}`;
+            ctx.fillStyle = "#06b6d4";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(`$${meta.ahorrado}/${meta.meta}`, width / 2, height / 2);
+          }
+        }]
       });
     });
 
+    // Botones para sumar ahorro
     document.querySelectorAll(".btn-sumar").forEach(btn => {
       btn.onclick = () => {
         metasSeleccionada = parseInt(btn.dataset.id);
@@ -240,6 +255,7 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
       };
     });
   }
+
 
   function sumarAhorroSeleccionada() {
     let monto = parseFloat(document.getElementById('montoAhorro').value);
