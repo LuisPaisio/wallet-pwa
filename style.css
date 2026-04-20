@@ -308,3 +308,13 @@ body {
   background: #0891b2;
   transform: scale(1.05);
 }
+
+/* Ocultar todos los contenidos de tabs dentro del modal */
+.tab-content {
+  display: none;
+}
+
+/* Mostrar solo el que tenga la clase active */
+.tab-content.active {
+  display: block;
+}

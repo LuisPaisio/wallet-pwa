@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   request.onsuccess = function(event) {
     db = event.target.result;
+
+    renderizarMovimientos();
     renderizarMetas();
     actualizarGraficos();
   };
@@ -33,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tx.oncomplete = () => {
       actualizarGraficos();
+      renderizarMovimientos();
       cerrarModal("modal");
     };
   }
@@ -281,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tx.oncomplete = () => {
           cerrarModal("modalAhorro");
           renderizarMetas();
+          actualizarGraficos();
         };
       }
     };
