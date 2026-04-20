@@ -43,8 +43,46 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  function renderizarMovimientos(limit = 5, filtroFecha = null) {
+    obtenerMovimientos(movimientos => {
+      // Ordenar por fecha descendente
+      movimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+      // Filtrar por fecha si se pasa un rango
+      if (filtroFecha) {
+        movimientos = movimientos.filter(m => {
+          let fecha = new Date(m.fecha);
+          return fecha >= filtroFecha.inicio && fecha <= filtroFecha.fin;
+        });
+      }
+
+      // Limitar cantidad
+      let mostrar = movimientos.slice(0, limit);
+
+      const body = document.getElementById("movimientosBody");
+      body.innerHTML = "";
+      mostrar.forEach(m => {
+        let fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${new Date(m.fecha).toLocaleDateString()}</td>
+          <td>${m.tipo}</td>
+          <td>${m.desc}</td>
+          <td>$${m.monto}</td>
+          <td>${m.etiqueta}</td>
+        `;
+        body.appendChild(fila);
+      });
+    });
+  }
+
+
   function actualizarGraficos() {
     obtenerMovimientos(movimientos => {
+      if (movimientos.length === 0) {
+        document.getElementById('mensajeWallet').style.display = 'block';
+      } else {
+        document.getElementById('mensajeWallet').style.display = 'none';
+      }
       let totalIngresos = movimientos.filter(m => m.tipo === 'ingreso').reduce((acc, m) => acc + m.monto, 0);
       let totalGastos = movimientos.filter(m => m.tipo === 'gasto').reduce((acc, m) => acc + m.monto, 0);
 
@@ -58,6 +96,16 @@ document.addEventListener("DOMContentLoaded", () => {
             data: [totalIngresos, totalGastos],
             backgroundColor: ['#3b82f6', '#f87171']
           }]
+        },
+        options: {
+          plugins: {
+            title: {
+              display: true,
+              text: 'Ingresos vs Gastos',
+              font: { size: 18, family: 'Poppins', weight: 'bold' },
+              color: '#06b6d4'
+            }
+          }
         }
       });
 
@@ -75,7 +123,17 @@ document.addEventListener("DOMContentLoaded", () => {
             data: Object.values(categorias),
             backgroundColor: ['#facc15', '#06b6d4', '#9c27b0', '#60a5fa']
           }]
-        }
+        },
+        options: {
+            plugins: {
+              title: {
+                display: true,
+                text: 'Gastos por Categoría',
+                font: { size: 18, family: 'Poppins', weight: 'bold' },
+                color: '#06b6d4'
+              }
+            }
+          }
       });
     });
   }
@@ -174,9 +232,20 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Meta completada, no puedes sumar más ahorro.");
           return;
         }
+
+        // Si el monto supera lo que falta para la meta
+        if (meta.ahorrado + monto > meta.meta) {
+          let confirmar = confirm(
+            `Estás intentando sumar $${monto}, pero tu meta es de $${meta.meta}. 
+  Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}. 
+  ¿Quieres agregarlo igualmente?`
+          );
+          if (!confirmar) return;
+        }
+
         meta.ahorrado += monto;
-        if (meta.ahorrado > meta.meta) meta.ahorrado = meta.meta;
         store.put(meta);
+
         tx.oncomplete = () => {
           cerrarModal("modalAhorro");
           renderizarMetas();
@@ -186,7 +255,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Modal helpers ---
-  function abrirModal(id) { document.getElementById(id).style.display = 'block'; }
+  function abrirModal(id) {
+    document.getElementById(id).style.display = 'block';
+    if (id === "modal") {
+      // Reinicia el estado de tabs al abrir
+      document.querySelectorAll('.tabs a').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector('.tabs a[href="#ingreso"]').classList.add('active');
+      document.getElementById('ingreso').classList.add('active');
+    }
+  }
   function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
   document.querySelectorAll(".close").forEach(btn => {
     btn.onclick = () => btn.closest(".modal").style.display = "none";
@@ -229,6 +307,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(() => console.log("Service Worker registrado"))
       .catch(err => console.error("Error al registrar SW:", err));
   }
+
+  document.getElementById("verMas").onclick = () => {
+    renderizarMovimientos(100); // o todos
+  };
 
   // Exponer funciones globales
   window.guardarMovimiento = guardarMovimiento;

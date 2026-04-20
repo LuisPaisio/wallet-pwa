@@ -11,7 +11,7 @@
 <body>
   <!-- Barra superior con branding -->
   <header class="main-header">
-    <div class="brand">💸 Wallet Neon</div>
+    <div class="brand">💸 My Wallet</div>
     <nav class="main-tabs">
       <a href="#wallet" class="active">Wallet</a>
       <a href="#metas">Metas</a>
@@ -19,6 +19,24 @@
   </header>
 
   <!-- Sección Wallet -->
+  <div id="tablaMovimientos">
+    <h2>Últimos movimientos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Descripción</th>
+          <th>Monto</th>
+          <th>Categoría</th>
+        </tr>
+      </thead>
+      <tbody id="movimientosBody">
+        <!-- filas dinámicas -->
+      </tbody>
+    </table>
+    <button id="verMas">Ver más</button>
+  </div>
   <div id="wallet" class="tab-section active">
     <div class="chart-container">
       <canvas id="graficoIngresosGastos"></canvas>
@@ -61,6 +79,16 @@
         <input id="descIngreso" type="text" placeholder="Descripción">
         <input id="montoIngreso" type="number" placeholder="Monto">
         <input id="etiquetaIngreso" type="text" placeholder="Etiqueta">
+        <label for="etiquetaGasto">Categoría:</label>
+        <select id="etiquetaGasto">
+          <option value="Sueldo">Sueldo</option>
+          <option value="Freelance">Freelance</option>
+          <option value="Ventas">Ventas</option>
+          <option value="Inversiones">Inversiones</option>
+          <option value="Donaciones">Donaciones</option>
+          <option value="Otros">Otros Ingresos</option>
+        </select>
+
         <button onclick="guardarMovimiento('ingreso')">Guardar</button>
       </div>
 
@@ -68,6 +96,18 @@
         <input id="descGasto" type="text" placeholder="Descripción">
         <input id="montoGasto" type="number" placeholder="Monto">
         <input id="etiquetaGasto" type="text" placeholder="Etiqueta">
+        <label for="etiquetaGasto">Categoría:</label>
+        <select id="etiquetaGasto">
+          <option value="Vivienda">Vivienda</option>
+          <option value="Transporte">Transporte</option>
+          <option value="Alimentación">Alimentación</option>
+          <option value="Salud">Salud</option>
+          <option value="Educación">Educación</option>
+          <option value="Entretenimiento">Entretenimiento</option>
+          <option value="Ropa">Ropa y accesorios</option>
+          <option value="Ahorro">Ahorro / Inversión</option>
+          <option value="Otros">Otros gastos</option>
+        </select>
         <button onclick="guardarMovimiento('gasto')">Guardar</button>
       </div>
     </div>
