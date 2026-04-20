@@ -374,6 +374,10 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
       tab.classList.add('active');
       document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
       document.querySelector(tab.getAttribute('href')).classList.add('active');
+
+      if (tab.getAttribute('href') === '#metas') {
+        refrescarDatos();
+      }
     });
   });
 
