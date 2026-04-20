@@ -23,13 +23,13 @@ Aplicación web progresiva (PWA) para gestionar ingresos, gastos y metas de ahor
 - Chart.js para gráficos interactivos.
 
 ## 📂 Estructura del proyecto
-´´´bash
+```bash
 wallet-app/
 ├── index.html        # Página principal
 ├── style.css         # Estilos globales
 ├── app.js            # Lógica de la aplicación
 ├── README.md         # Documentación del proyecto
-´´´
+```
 
 ## ⚙️ Instalación y uso
 
