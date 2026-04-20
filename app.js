@@ -43,23 +43,22 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function renderizarMovimientos(limit = 5, filtroFecha = null) {
+  function renderizarMovimientos(limit = 5) {
     obtenerMovimientos(movimientos => {
-      // Ordenar por fecha descendente
-      movimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      const body = document.getElementById("movimientosBody");
+      const mensaje = document.getElementById("mensajeMovimientos");
 
-      // Filtrar por fecha si se pasa un rango
-      if (filtroFecha) {
-        movimientos = movimientos.filter(m => {
-          let fecha = new Date(m.fecha);
-          return fecha >= filtroFecha.inicio && fecha <= filtroFecha.fin;
-        });
+      if (movimientos.length === 0) {
+        mensaje.style.display = "block";
+        body.innerHTML = "";
+        return;
+      } else {
+        mensaje.style.display = "none";
       }
 
-      // Limitar cantidad
+      movimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       let mostrar = movimientos.slice(0, limit);
 
-      const body = document.getElementById("movimientosBody");
       body.innerHTML = "";
       mostrar.forEach(m => {
         let fila = document.createElement("tr");
@@ -74,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-
 
   function actualizarGraficos() {
     obtenerMovimientos(movimientos => {
@@ -115,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (chartCategorias) chartCategorias.destroy();
+      let totalgastoscategorias = Object.values(categorias).reduce((acc,val) => acc + val, 0);
       chartCategorias = new Chart(document.getElementById('graficoCategorias'), {
         type: 'doughnut',
         data: {
@@ -131,9 +130,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 text: 'Gastos por Categoría',
                 font: { size: 18, family: 'Poppins', weight: 'bold' },
                 color: '#06b6d4'
-              }
+              },
+              legend: { position: 'bottom' }
             }
-          }
+          },
+          plugins: [{
+            id: 'centerText',
+            beforeDraw: chart => {
+              let { ctx, chartArea: { width, height } } = chart;
+              ctx.save();
+              ctx.font = `bold 18px ${getComputedStyle(document.body).fontFamily}`;
+              ctx.fillStyle = "#06b6d4";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(`$${totalGastosCategorias}`, width / 2, height / 2);
+            }
+          }]
       });
     });
   }
@@ -198,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
               beforeDraw: chart => {
                 let { ctx, chartArea: { width, height } } = chart;
                 ctx.save();
-                ctx.font = "bold 18px Poppins";
+                ctx.font = `bold 18px ${getComputedStyle(document.body).fontFamily}`;
                 ctx.fillStyle = "#06b6d4";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";

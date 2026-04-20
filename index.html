@@ -19,9 +19,11 @@
   </header>
 
   <!-- Sección Wallet -->
-  <div id="tablaMovimientos">
+  <div id="wallet" class="tab-section active">
+  <div id="tablaMovimientos" class="chart-container">
     <h2>Últimos movimientos</h2>
-    <table>
+    <p id="mensajeMovimientos" class="chart-overlay">No hay datos aún</p>
+    <table class="movimientos-table">
       <thead>
         <tr>
           <th>Fecha</th>
@@ -35,9 +37,8 @@
         <!-- filas dinámicas -->
       </tbody>
     </table>
-    <button id="verMas">Ver más</button>
+    <button id="verMas" class="btn-vermas">Ver más</button>
   </div>
-  <div id="wallet" class="tab-section active">
     <div class="chart-container">
       <canvas id="graficoIngresosGastos"></canvas>
       <div class="chart-overlay">No hay datos aún</div>
@@ -80,7 +81,7 @@
         <input id="montoIngreso" type="number" placeholder="Monto">
         <input id="etiquetaIngreso" type="text" placeholder="Etiqueta">
         <label for="etiquetaGasto">Categoría:</label>
-        <select id="etiquetaGasto">
+        <select id="etiquetaIngreso">
           <option value="Sueldo">Sueldo</option>
           <option value="Freelance">Freelance</option>
           <option value="Ventas">Ventas</option>
