@@ -48,7 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
     storeMetas.openCursor().onsuccess = e => {
       let cursor = e.target.result;
       if (cursor) {
-        metas.push(cursor.value);
+        let value = cursor.value;
+        // Asegurar que cada meta tenga su id
+        value.id = cursor.primaryKey;
+        metas.push(value);
         cursor.continue();
       }
     };
