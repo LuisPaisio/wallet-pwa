@@ -267,7 +267,7 @@ body {
 
 /* Tabla de movimientos */
 .movimientos-table {
-  width: 100%;
+  width: 600px;
   border-collapse: collapse;
   margin-top: 15px;
   color: #e2e8f0;
@@ -278,12 +278,16 @@ body {
   padding: 10px;
   text-align: left;
   border-bottom: 1px solid #334155;
+  white-space: nowrap;
 }
 
 .movimientos-table th {
+  position: sticky;
+  top: 0;
   background: #1e3a8a;
   color: #facc15;
   font-weight: bold;
+  z-index: 2;
 }
 
 .movimientos-table tr:hover {
@@ -317,4 +321,9 @@ body {
 /* Mostrar solo el que tenga la clase active */
 .tab-content.active {
   display: block;
+}
+
+.movimientos-wrapper {
+  overflow-x: auto;                 /* habilita scroll horizontal */
+  -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
 }
