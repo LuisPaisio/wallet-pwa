@@ -1,10 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
+  let db;
   let request = indexedDB.open("walletDB", 1);
 
   request.onupgradeneeded = function(event) {
     let db = event.target.result;
     db.createObjectStore("movimientos", { keyPath: "id", autoIncrement: true });
     db.createObjectStore("metas", { keyPath: "id", autoIncrement: true });
+  };
+
+  request.onsuccess = function(event) {
+    db = event.target.result;
+    renderizarMetas();
+    actualizarGraficos();
+  };
+
+  request.onerror = function(event) {
+    console.error("Error al abrir IndexedDB:", event.target.errorCode);
   };
 
   let chartIngresosGastos, chartCategorias;
@@ -16,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let monto = tipo === 'ingreso' ? document.getElementById('montoIngreso').value : document.getElementById('montoGasto').value;
     let etiqueta = tipo === 'ingreso' ? document.getElementById('etiquetaIngreso').value : document.getElementById('etiquetaGasto').value;
 
-    let db = request.result;
     let tx = db.transaction("movimientos", "readwrite");
     let store = tx.objectStore("movimientos");
     store.add({ tipo, desc, monto: parseFloat(monto), etiqueta, fecha: new Date() });
@@ -28,10 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function obtenerMovimientos(callback) {
-    let db = request.result;
-    let tx = db.transaction("movimientos", "readonly");
+    let tx = db.transaction("movimientos", "readonly"); // usamos la variable global db
     let store = tx.objectStore("movimientos");
     let movimientos = [];
+
     store.openCursor().onsuccess = e => {
       let cursor = e.target.result;
       if (cursor) {
@@ -81,9 +91,16 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         document.getElementById('mensajeWallet').style.display = 'none';
       }
-      let totalIngresos = movimientos.filter(m => m.tipo === 'ingreso').reduce((acc, m) => acc + m.monto, 0);
-      let totalGastos = movimientos.filter(m => m.tipo === 'gasto').reduce((acc, m) => acc + m.monto, 0);
 
+      let totalIngresos = movimientos
+        .filter(m => m.tipo === 'ingreso')
+        .reduce((acc, m) => acc + m.monto, 0);
+
+      let totalGastos = movimientos
+        .filter(m => m.tipo === 'gasto')
+        .reduce((acc, m) => acc + m.monto, 0);
+
+      // --- Gráfico Ingresos vs Gastos ---
       if (chartIngresosGastos) chartIngresosGastos.destroy();
       chartIngresosGastos = new Chart(document.getElementById('graficoIngresosGastos'), {
         type: 'bar',
@@ -102,18 +119,21 @@ document.addEventListener("DOMContentLoaded", () => {
               text: 'Ingresos vs Gastos',
               font: { size: 18, family: 'Poppins', weight: 'bold' },
               color: '#06b6d4'
-            }
+            },
+            legend: { display: false }
           }
         }
       });
 
+      // --- Gráfico Categorías ---
       let categorias = {};
       movimientos.filter(m => m.tipo === 'gasto').forEach(m => {
         categorias[m.etiqueta] = (categorias[m.etiqueta] || 0) + m.monto;
       });
 
       if (chartCategorias) chartCategorias.destroy();
-      let totalgastoscategorias = Object.values(categorias).reduce((acc,val) => acc + val, 0);
+      let totalGastosCategorias = Object.values(categorias).reduce((acc, val) => acc + val, 0);
+
       chartCategorias = new Chart(document.getElementById('graficoCategorias'), {
         type: 'doughnut',
         data: {
@@ -124,28 +144,28 @@ document.addEventListener("DOMContentLoaded", () => {
           }]
         },
         options: {
-            plugins: {
-              title: {
-                display: true,
-                text: 'Gastos por Categoría',
-                font: { size: 18, family: 'Poppins', weight: 'bold' },
-                color: '#06b6d4'
-              },
-              legend: { position: 'bottom' }
-            }
-          },
-          plugins: [{
-            id: 'centerText',
-            beforeDraw: chart => {
-              let { ctx, chartArea: { width, height } } = chart;
-              ctx.save();
-              ctx.font = `bold 18px ${getComputedStyle(document.body).fontFamily}`;
-              ctx.fillStyle = "#06b6d4";
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(`$${totalGastosCategorias}`, width / 2, height / 2);
-            }
-          }]
+          plugins: {
+            title: {
+              display: true,
+              text: 'Gastos por Categoría',
+              font: { size: 18, family: 'Poppins', weight: 'bold' },
+              color: '#06b6d4'
+            },
+            legend: { position: 'bottom' }
+          }
+        },
+        plugins: [{
+          id: 'centerText',
+          beforeDraw: chart => {
+            let { ctx, chartArea: { width, height } } = chart;
+            ctx.save();
+            ctx.font = `bold 18px ${getComputedStyle(document.body).fontFamily}`;
+            ctx.fillStyle = "#06b6d4";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(`$${totalGastosCategorias}`, width / 2, height / 2);
+          }
+        }]
       });
     });
   }
@@ -155,8 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let desc = document.getElementById('descMeta').value;
     let monto = parseFloat(document.getElementById('montoMeta').value);
 
-    let db = request.result;
-    let tx = db.transaction("metas", "readwrite");
+    let tx = db.transaction("metas", "readwrite"); // usamos la variable global db
     let store = tx.objectStore("metas");
     store.add({ desc, meta: monto, ahorrado: 0 });
 
@@ -167,10 +186,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderizarMetas() {
-    let db = request.result;
-    let tx = db.transaction("metas", "readonly");
+    let tx = db.transaction("metas", "readonly"); // usamos la variable global db
     let store = tx.objectStore("metas");
     let metas = [];
+
     store.openCursor().onsuccess = e => {
       let cursor = e.target.result;
       if (cursor) {
@@ -179,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         const lista = document.getElementById("listaMetas");
         lista.innerHTML = "";
+
         metas.forEach(meta => {
           const card = document.createElement("div");
           card.className = "meta-card";
@@ -232,8 +252,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function sumarAhorroSeleccionada() {
     let monto = parseFloat(document.getElementById('montoAhorro').value);
-    let db = request.result;
-    let tx = db.transaction("metas", "readwrite");
+
+    let tx = db.transaction("metas", "readwrite"); // usamos la variable global db
     let store = tx.objectStore("metas");
     let req = store.get(metasSeleccionada);
 
