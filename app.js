@@ -43,18 +43,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function obtenerMovimientos(callback) {
-    let tx = db.transaction("movimientos", "readonly"); // usamos la variable global db
+    let tx = db.transaction("movimientos", "readonly");
     let store = tx.objectStore("movimientos");
     let movimientos = [];
 
-    store.openCursor().onsuccess = e => {
-      let cursor = e.target.result;
+    store.openCursor().onsuccess = function(event) {
+      let cursor = event.target.result;
       if (cursor) {
         movimientos.push(cursor.value);
         cursor.continue();
-      } else {
-        callback(movimientos);
       }
+    };
+
+    tx.oncomplete = () => {
+      callback(movimientos);
     };
   }
 
