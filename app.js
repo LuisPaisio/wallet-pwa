@@ -189,7 +189,11 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
           title: {
             display: true,
             text: 'Ingresos vs Gastos',
-            font: { size: 18, family: 'Poppins', weight: 'bold' },
+            font: {
+              size: 18,
+              family: getComputedStyle(document.body).fontFamily,
+              weight: 'bold'
+            },
             color: '#06b6d4'
           },
           legend: { display: false }
@@ -219,7 +223,11 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
           title: {
             display: true,
             text: 'Gastos por Categoría',
-            font: { size: 18, family: 'Poppins', weight: 'bold' },
+            font: {
+              size: 18,
+              family: getComputedStyle(document.body).fontFamily,
+              weight: 'bold'
+            },
             color: '#06b6d4'
           },
           legend: { position: 'bottom' }
