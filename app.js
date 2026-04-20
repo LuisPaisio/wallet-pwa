@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     txMetas.oncomplete = () => {
-      renderizarMetas(metas);
+      setTimeout(() => renderizarMetas(metas), 0);
     };
   }
 
@@ -221,19 +221,7 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
           },
           legend: { position: 'bottom' }
         }
-      },
-      plugins: [{
-        id: 'centerText',
-        beforeDraw: chart => {
-          let { ctx, chartArea: { width, height } } = chart;
-          ctx.save();
-          ctx.font = `bold 18px ${getComputedStyle(document.body).fontFamily}`;
-          ctx.fillStyle = "#06b6d4";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(`$${totalGastosCategorias}`, width / 2, height / 2);
-        }
-      }]
+      }
     });
   }
 
@@ -252,7 +240,9 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
       `;
       lista.appendChild(card);
 
-      let progreso = (meta.ahorrado / meta.meta) * 100;
+      let ahorrado = meta.ahorrado || 0;
+      let objetivo = meta.meta || 1; // evitar división por 0
+      let progreso = (ahorrado / objetivo) * 100;
       if (progreso < 0) progreso = 0;
       if (progreso > 100) progreso = 100;
 
@@ -277,7 +267,7 @@ Esto superará la meta en $${(meta.ahorrado + monto) - meta.meta}.
             ctx.fillStyle = "#06b6d4";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(`$${meta.ahorrado}/${meta.meta}`, width / 2, height / 2);
+            ctx.fillText(`$${ahorrado}/${objetivo}`, width / 2, height / 2);
           }
         }]
       });
